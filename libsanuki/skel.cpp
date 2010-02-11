@@ -1,4 +1,4 @@
-// ReciverInterface
+/// ?
 /*
 Copyright (c) 2010 IIMURA Takuji. All rights reserved.
 
@@ -25,31 +25,20 @@ SUCH DAMAGE.
 $Id$
 */
 
-#ifndef LIBSANUKI_ReciverInterface_H　
-#define LIBSANUKI_ReciverInterface_H
-
-#include <inttypes.h>
-#include <sys/types.h>
-
-#include "SanukiDataBlock.h"
+#include "?.h"
 
 namespace LibSanuki {
 
-// 外部からの入力に対するインタフェースのabstract classです。
-class ReciverInterface {
-public:
-	// コンストラクタ
-	virtual ReciverInterface();
-	// デストラクタ
-	virtual ~ReciverInterface();
+/**
+ @brief コンストラクタ
+ @
+ */
+?::?(){
+}
 
-	// 入力を処理します。入力されたデータをデータブロックのリストにして返却します。
-	// @returns 処理にエラーがあった時のみ false を返します。
-	// @note データブロックは読み込み終わったデータブロックのみが返却され、
-	// 読み込み途中のものは ReciverInterface が保持します。
-	//virtual const bool Input(const char *data, const size_t size, SanukiDataBlockVector &out_dataList);
-};
+?::~?(){
+}
 
 }; // namespase LibSanuki
 
-#endif // LIBSANUKI_ReciverInterface_H
+

@@ -1,0 +1,5 @@
+*.cpp	ident
+*.h	ident
+*.cc	ident
+*.c	ident
+*.c++	ident
