@@ -30,15 +30,17 @@ $Id$
 #ifndef LIBSANUKI_TCPSendConnection_H
 #define LIBSANUKI_TCPSendConnection_H
 
+#include "EventManager.h"
 #include "SendConnection.h"
 
 namespace LibSanuki {
 
 class TCPSendConnection : public SendConnection {
 private:
-	int m_Socket;
+	EventManager &m_EventManager;
+	SocketDescriptor m_Socket;
 public:
-	TCPSendConnection();
+	explicit TCPSendConnection(EventManager &eventManager);
 	~TCPSendConnection();
 
 	const bool Initialize(const std::string &uri);

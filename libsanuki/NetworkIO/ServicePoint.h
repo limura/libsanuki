@@ -1,5 +1,5 @@
 /**
- * ServicePoint
+ * RemoteService
  */
 /*
 Copyright (c) 2010 IIMURA Takuji. All rights reserved.
@@ -27,8 +27,8 @@ SUCH DAMAGE.
 $Id$
 */
 
-#ifndef LIBSANUKI_ServicePoint_H
-#define LIBSANUKI_ServicePoint_H
+#ifndef LIBSANUKI_RemoteService_H
+#define LIBSANUKI_RemoteService_H
 
 #include "SanukiDataBlock.h"
 #include "SendConnection.h"
@@ -36,22 +36,28 @@ $Id$
 
 namespace LibSanuki {
 
-class ServicePoint {
+class RemoteService {
 private:
+	/// 指定されたURI
+	const std::string m_Uri;
+	/// 送信中のデータのリスト
 	SanukiDataBlockList m_SendQueue;
+	/// 利用中のコネクション
 	SendConnection *m_pConnection;
 
 public:
-	ServicePoint();
-	explicit ServicePoint(const ServicePoint &other);
-	explicit ServicePoint(const char *uri);
-	explicit ServicePoint(const std::string &uri);
-	~ServicePoint();
+	RemoteService();
+	explicit RemoteService(const ServicePoint &other);
+	explicit RemoteService(const char *uri);
+	explicit RemoteService(const std::string &uri);
+	~RemoteService();
 
-	const bool Send(SanukiDataBlock *message); // メッセージを送信します。渡されたメッセージは送信が終了すると開放されます。
-	const bool SendCopy(const SanukiDataBlock &message); // メッセージを送信します。渡されたメッセージは開放されず、内部にコピーが確保されます。
+	/// メッセージを送信します。渡されたメッセージはServicePointの管理となり、送信が終了すると開放されます。
+	const bool Send(SanukiDataBlock *message);
+	/// メッセージを送信します。渡されたメッセージは開放されず、ServicePoint内部にはコピーが確保されます。
+	const bool SendCopy(const SanukiDataBlock &message);
 };
 
 }; // namespase LibSanuki
 
-#endif // LIBSANUKI_ServicePoint_H
+#endif // LIBSANUKI_RemoteService_H

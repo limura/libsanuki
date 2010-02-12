@@ -164,6 +164,10 @@
 			Name="NetworkIO"
 			>
 			<File
+				RelativePath=".\EventManager.h"
+				>
+			</File>
+			<File
 				RelativePath=".\NetworkIO\ReciverInterface.h"
 				>
 			</File>

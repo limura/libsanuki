@@ -31,6 +31,7 @@ $Id$
 #ifndef LIBSANUKI_SendConnection_H
 #define LIBSANUKI_SendConnection_H
 
+include "EventManager.h"
 #include "SanukiDataBlock.h"
 #include <string>
 
@@ -38,10 +39,14 @@ namespace LibSanuki {
 
 class SendConnection {
 public:
+	virtual explicit SendConnection(EventManager &manager) = 0;
 	virtual ~SendConnection();
+
+	/// 初期化します
 	virtual const bool Initialize(const std::string &uri) = 0;
 
-	virtual const bool SendBlock(SanukiDataBlock *data) = 0; // データを送信します。送信が失敗した場合には false を返します。dataは送信されたデータ分だけ縮みます。送信の終了はデータのサイズで判断してください。
+	/// データを送信します。送信が失敗した場合には false を返します。dataは送信されたデータ分だけ縮みます。送信の終了はデータのサイズで判断してください。
+	virtual const bool SendBlock(SanukiDataBlock *data) = 0;
 };
 
 }; // namespase LibSanuki
