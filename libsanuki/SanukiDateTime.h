@@ -1,7 +1,4 @@
-/**
- * SendConnection
- * 送信するためのコネクション abstract class
- */
+/// SanukiDateTime
 /*
 Copyright (c) 2010 IIMURA Takuji. All rights reserved.
 
@@ -28,26 +25,52 @@ SUCH DAMAGE.
 $Id$
 */
 
-#ifndef LIBSANUKI_SendConnection_H
-#define LIBSANUKI_SendConnection_H
+#ifndef LIBSANUKI_SanukiDateTime_H
+#define LIBSANUKI_SanukiDateTime_H
 
-#include "EventManager.h"
-#include "SanukiDataBlock.h"
+#include <inttypes.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif
+#include <time.h>
 #include <string>
 
 namespace LibSanuki {
 
-class SendConnection {
+class SanukiDateTime {
+private:
+	struct timeval m_Tv;
+
+	void _SetNowTime();
 public:
-	virtual ~SendConnection();
+	/// コンストラクタ
+	SanukiDateTime();
+	/// デストラクタ
+	~SanukiDateTime();
 
-	/// 初期化します
-	virtual const bool Initialize(const std::string &uri) = 0;
+	/// 現在の時間を取得します。
+	static SanukiDateTime NowTime();
 
-	/// データを送信します。送信が失敗した場合には false を返します。dataは送信されたデータ分だけ縮みます。送信の終了はデータのサイズで判断してください。
-	virtual const bool SendBlock(SanukiDataBlock *data) = 0;
+	/// フォーマットされた文字列を取得します
+	std::string FormatedString();
+
+	/// 比較演算子(==)
+	const bool operator==(const SanukiDateTime &other) const;
+	/// 比較演算子(!=)
+	const bool operator!=(const SanukiDateTime &other) const;
+	/// 比較演算子(<)
+	const bool operator<(const SanukiDateTime &other) const;
+	/// 比較演算子(>)
+	const bool operator>(const SanukiDateTime &other) const;
+	/// 比較演算子(<=)
+	const bool operator<=(const SanukiDateTime &other) const;
+	/// 比較演算子(>=)
+	const bool operator>=(const SanukiDateTime &other) const;
+
+	/// 加算演算子
+	const SanukiDateTime &operator+(const uint32_t millisecond);
 };
 
 }; // namespase LibSanuki
 
-#endif // LIBSANUKI_SendConnection_H
+#endif // LIBSANUKI_SanukiDateTime_H

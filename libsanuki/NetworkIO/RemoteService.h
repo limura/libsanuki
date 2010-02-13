@@ -36,6 +36,8 @@ $Id$
 
 namespace LibSanuki {
 
+class ServicePoint;
+
 class RemoteService {
 private:
 	/// 指定されたURI
@@ -56,6 +58,13 @@ public:
 	const bool Send(SanukiDataBlock *message);
 	/// メッセージを送信します。渡されたメッセージは開放されず、ServicePoint内部にはコピーが確保されます。
 	const bool SendCopy(const SanukiDataBlock &message);
+
+	/// 比較演算子(==)
+	const bool operator==(const RemoteService &other) const;
+	/// 比較演算子(!=)
+	const bool operator!=(const RemoteService &other) const;
+	/// 比較演算子(<)
+	const bool operator<(const RemoteService &other) const;
 };
 
 }; // namespase LibSanuki

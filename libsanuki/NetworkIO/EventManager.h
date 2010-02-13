@@ -30,27 +30,36 @@ $Id$
 
 #include <inttypes.h>
 
-// libevent を使います
 #include <event.h>
 #include <boost/function.hpp>
+#include <boost/shared_ptr.hpp>
+#include <set>
 
 namespace LibSanuki {
 
 typedef int SocketDescriptor;
-typedef boost::function::function<const bool(SanukiDataBlock *)> ReciveEventFunctor;
-typedef boost::function::function<const bool(SendConnection *)> SendEventFunctor;
-typedef boost::function::function<const bool()> TimerEventFunctor;
-typedef uint32_t EventDesctiptor;
+typedef boost::function<void()> EventFunctor;
+typedef void *EventDescriptor;
 
 class EventManager {
 private:
 	struct event_base *m_pEventBase;
+public:
+	/// 内部で利用するための構造体です。外部からはアクセスしないでください
 	struct EventData {
+		EventManager *m_pManager;
 		struct event m_Event;
-
+		EventFunctor m_Functor;
+		EventDescriptor m_Descriptor;
 	};
-	typedef std::map<EventDescriptor, struct event> EventMap;
-	EventMap m_EventMap;
+private:
+	typedef std::set<EventData *> EventSet;
+	EventSet m_EventSet;
+	uint32_t m_NowDescriptorNum;
+
+	EventData *_CreateNewEventData();
+	const bool _DeleteEventData(struct EventData *data);
+
 public:
 	EventManager();
 	~EventManager();
@@ -65,14 +74,17 @@ public:
 	const bool DispatchAll();
 
 	/// 読み込み用にイベントハンドラを指定します
-	const EventDescriptor SetReadEventHandler(const SocketDescriptor descriptor, ReciveEventFunctor &functor);
+	const EventDescriptor SetReadEventHandler(const SocketDescriptor descriptor, EventFunctor &functor);
 	/// 書き込み用にイベントハンドラを指定します
-	const EventDescriptor SetWriteEventFunctor(const SocketDescriptor descriptor, SendEventFunctor &functor);
+	const EventDescriptor SetWriteEventFunctor(const SocketDescriptor descriptor, EventFunctor &functor);
 	/// 時間がたったときに呼び出されるイベントハンドラを指定します
-	const EventDescriptor SetTimerEventFunctor(const uint32_t timeoutMillisecond, TimerEventFunctor &functor);
+	const EventDescriptor SetTimerEventFunctor(const uint32_t timeoutMillisecond, EventFunctor &functor);
 
 	/// Set*EventFunctor　で設定したイベントハンドラを取り除きます。
-	const bool CanselEvent(const EventDescriptor descriptor);
+	const bool CanselEvent(EventDescriptor descriptor);
+
+	/// なんらかのイベントが発生したときに呼び出されるイベントハンドラです
+	void EventHandler(EventData *data);
 };
 
 }; // namespase LibSanuki

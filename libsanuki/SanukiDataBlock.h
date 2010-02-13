@@ -36,9 +36,9 @@ $Id$
 namespace LibSanuki {
 
 	// ひとつのメッセージを表すデータブロックです。
-	typedef std::string SanukiDatBlock;
+	typedef std::string SanukiDataBlock;
 	// データブロックの配列です。
-	typedef std:vector<SanukiDataBlock *> SanukiDataBlockVector;
+	typedef std::vector<SanukiDataBlock *> SanukiDataBlockVector;
 	// データブロックのリストです。
 	typedef std::list<SanukiDataBlock *> SanukiDataBlockList;
 

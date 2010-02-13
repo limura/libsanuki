@@ -1,7 +1,4 @@
-/**
- * SendConnection
- * 送信するためのコネクション abstract class
- */
+/// UnitTest
 /*
 Copyright (c) 2010 IIMURA Takuji. All rights reserved.
 
@@ -28,26 +25,29 @@ SUCH DAMAGE.
 $Id$
 */
 
-#ifndef LIBSANUKI_SendConnection_H
-#define LIBSANUKI_SendConnection_H
+#include <boost/test/unit_test.hpp>
+#include <iostream>
 
-#include "EventManager.h"
-#include "SanukiDataBlock.h"
-#include <string>
+#include <SanukiLogger.h>
 
-namespace LibSanuki {
+using namespace LibSanuki;
 
-class SendConnection {
-public:
-	virtual ~SendConnection();
+BOOST_AUTO_TEST_SUITE(foo_test_case)
 
-	/// 初期化します
-	virtual const bool Initialize(const std::string &uri) = 0;
+BOOST_AUTO_TEST_CASE(hoge_test){
+	BOOST_CHECK_EQUAL(1, 2);
+	BOOST_REQUIRE_EQUAL(1, 2);
+}
 
-	/// データを送信します。送信が失敗した場合には false を返します。dataは送信されたデータ分だけ縮みます。送信の終了はデータのサイズで判断してください。
-	virtual const bool SendBlock(SanukiDataBlock *data) = 0;
-};
+BOOST_AUTO_TEST_CASE(hage_test){
+	BOOST_CHECK_CLOSE(3.0, 2.0, 0.5);
+	BOOST_REQUIRE_CLOSE(3.0, 2.0, 0.5);
+}
 
-}; // namespase LibSanuki
+BOOST_AUTO_TEST_CASE(hige_test){
+	//BOOST_CHECK_THROW(throwFunc, std::exception);
+}
 
-#endif // LIBSANUKI_SendConnection_H
+BOOST_AUTO_TEST_SUITE_END()
+
+

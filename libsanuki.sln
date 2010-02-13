@@ -8,6 +8,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Doxygen", "Doxygen\Doxygen.
 		{ADDAA961-C072-4A0F-A27B-024EDBF5C935} = {ADDAA961-C072-4A0F-A27B-024EDBF5C935}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTest", "UnitTest\UnitTest.vcproj", "{B51AB15D-5416-4201-80DC-5925852691A5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{ADDAA961-C072-4A0F-A27B-024EDBF5C935} = {ADDAA961-C072-4A0F-A27B-024EDBF5C935}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -22,6 +27,10 @@ Global
 		{29B26671-B6A9-474F-9D78-DC92EF579E7F}.Debug|Win32.Build.0 = Debug|Win32
 		{29B26671-B6A9-474F-9D78-DC92EF579E7F}.Release|Win32.ActiveCfg = Release|Win32
 		{29B26671-B6A9-474F-9D78-DC92EF579E7F}.Release|Win32.Build.0 = Release|Win32
+		{B51AB15D-5416-4201-80DC-5925852691A5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B51AB15D-5416-4201-80DC-5925852691A5}.Debug|Win32.Build.0 = Debug|Win32
+		{B51AB15D-5416-4201-80DC-5925852691A5}.Release|Win32.ActiveCfg = Release|Win32
+		{B51AB15D-5416-4201-80DC-5925852691A5}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
