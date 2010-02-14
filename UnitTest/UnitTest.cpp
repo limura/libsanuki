@@ -27,6 +27,7 @@ $Id$
 
 #include <boost/test/unit_test.hpp>
 #include <iostream>
+#include <sstream>
 
 #include <SanukiLogger.h>
 
@@ -35,6 +36,7 @@ using namespace LibSanuki;
 BOOST_AUTO_TEST_SUITE(foo_test_case)
 
 BOOST_AUTO_TEST_CASE(hoge_test){
+	LOG_DEBUG((L"日本語でログを吐いてみるテスト。%d", 10));
 	BOOST_CHECK_EQUAL(1, 2);
 	BOOST_REQUIRE_EQUAL(1, 2);
 }

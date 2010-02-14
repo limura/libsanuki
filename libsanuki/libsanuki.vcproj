@@ -153,6 +153,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\NetworkIO\RemoteService.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\NetworkIO\RemoteService.h"
 				>
 			</File>
@@ -171,6 +175,14 @@
 		</Filter>
 		<File
 			RelativePath=".\inttypes.h"
+			>
+		</File>
+		<File
+			RelativePath=".\Libsanuki.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\Libsanuki.h"
 			>
 		</File>
 		<File

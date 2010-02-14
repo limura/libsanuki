@@ -71,10 +71,11 @@ SanukiDateTime SanukiDateTime::NowTime(){
 /// フォーマットされた文字列を取得します
 std::string SanukiDateTime::FormatedString(){
 	struct tm result;
+	time_t t = m_Tv.tv_sec;
 #ifdef _WIN32
-	localtime_s(&result, reinterpret_cast<const time_t *>(&m_Tv.tv_sec));
+	localtime_s(&result, &t);
 #else
-	localtime_r(&m_Tv.tv_sec, &result);
+	localtime_r(&t, &result);
 #endif
 	char buffer[256];
 #ifdef _WIN32

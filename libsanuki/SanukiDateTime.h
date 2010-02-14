@@ -39,8 +39,10 @@ namespace LibSanuki {
 
 class SanukiDateTime {
 private:
+	/// 時間を保存しておきます
 	struct timeval m_Tv;
 
+	/// 現在時刻を設定します
 	void _SetNowTime();
 public:
 	/// コンストラクタ
@@ -67,7 +69,7 @@ public:
 	/// 比較演算子(>=)
 	const bool operator>=(const SanukiDateTime &other) const;
 
-	/// 加算演算子
+	/// 加算演算子。ミリ秒単位で時間を加えます
 	const SanukiDateTime &operator+(const uint32_t millisecond);
 };
 

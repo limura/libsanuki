@@ -25,10 +25,13 @@ SUCH DAMAGE.
 $Id$
 */
 
+#include <boost/thread/thread.hpp>
+
 #include "SanukiLogger.h"
 #include "NetworkIO/RemoteService.h"
 #include "SanukiDateTime.h"
 #include <wchar.h>
+#include <sstream>
 
 namespace LibSanuki {
 
@@ -163,14 +166,14 @@ std::string SanukiLogger::Format(const wchar_t *fmt, ...){
 	return std::string(cBuffer);
 }
 
-/// フォーマットされた文字列を受け取ります
-std::string SanukiLogger::Format(std::stringstream &ostream){
-	return ostream.str();
-}
+// フォーマットされた文字列を受け取ります
+//std::string SanukiLogger::Format(std::ostream &ostream){
+//	return ostream.widt
+//}
 
 /// ログを出力します。
 void SanukiLogger::PutLog(const LogType type, std::string log, char *funcName, char *file, int line){
-	char *LogTypeName = "UNKNOWN";
+	const char *LogTypeName = "UNKNOWN";
 	switch(type){
 		case LOG_ERROR:
 			LogTypeName = "ERROR";
@@ -188,8 +191,10 @@ void SanukiLogger::PutLog(const LogType type, std::string log, char *funcName, c
 			LogTypeName = "UNKNOWN";
 			break;
 	}
+	std::stringstream sstream;
+	sstream << boost::this_thread::get_id();
 #ifdef _WIN32
-	file = strrchr(funcName, '\\');
+	file = strrchr(file, '\\');
 #else
 	file = strrchr(funcName, '/');
 #endif
@@ -199,9 +204,10 @@ void SanukiLogger::PutLog(const LogType type, std::string log, char *funcName, c
 #else
 	snprintf(
 #endif
-		buffer, sizeof(buffer), "%s %s %s %s:%d %s"
+		buffer, sizeof(buffer), "%s[%s][TID:%s][Func:%s][%s:%d] %s\r\n"
 					, SanukiDateTime::NowTime().FormatedString().c_str()
 					, LogTypeName
+					, sstream.str().c_str()
 					, funcName != NULL ? funcName : "UNKNOWN"
 					, file
 					, line
@@ -225,7 +231,7 @@ void SanukiLogger::PutLog(const LogType type, std::string log, char *funcName, c
 	{
 		RemoteServiceSet::iterator i = m_RemoteServiceSet.begin();
 		for(; i != m_RemoteServiceSet.end(); i++){
-			i->SendCopy(SanukiDataBlock(buffer));
+			i->SendCopy(buffer);
 		}
 	}
 }

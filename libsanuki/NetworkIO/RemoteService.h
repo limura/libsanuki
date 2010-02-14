@@ -32,6 +32,7 @@ $Id$
 
 #include "SanukiDataBlock.h"
 #include "SendConnection.h"
+#include "EventManager.h"
 #include <string>
 
 namespace LibSanuki {
@@ -40,6 +41,8 @@ class ServicePoint;
 
 class RemoteService {
 private:
+	/// メッセージの送信時に利用するEventManager
+	EventManager &m_EventManager;
 	/// 指定されたURI
 	const std::string m_Uri;
 	/// 送信中のデータのリスト
@@ -47,11 +50,17 @@ private:
 	/// 利用中のコネクション
 	SendConnection *m_pConnection;
 
+	/// 送信を開始します。
+	void _InvokeSend();
+
 public:
-	RemoteService();
-	explicit RemoteService(const ServicePoint &other);
-	explicit RemoteService(const char *uri);
-	explicit RemoteService(const std::string &uri);
+	/// コピーコンストラクタ
+	//explicit RemoteService(const ServicePoint &other);
+	/// コンストラクタ
+	explicit RemoteService(EventManager &manager, const char *uri);
+	/// コンストラクタ
+	explicit RemoteService(EventManager &manager, const std::string &uri);
+	/// デストラクタ
 	~RemoteService();
 
 	/// メッセージを送信します。渡されたメッセージはServicePointの管理となり、送信が終了すると開放されます。

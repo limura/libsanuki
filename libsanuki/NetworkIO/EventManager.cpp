@@ -29,18 +29,21 @@ $Id$
 
 extern "C" {
 
+/// libevent 用の読み込み用イベントハンドラ
 static void ReadHandler(int fd, short event, void *arg){
 	LibSanuki::EventManager::EventData *data = reinterpret_cast<LibSanuki::EventManager::EventData *>(arg);
 	if(data != NULL && data->m_pManager != NULL){
 		data->m_pManager->EventHandler(data);
 	}
 }
+/// libevent 用の書き出し用イベントハンドラ
 static void WriteHandler(int fd, short event, void *arg){
 	LibSanuki::EventManager::EventData *data = reinterpret_cast<LibSanuki::EventManager::EventData *>(arg);
 	if(data != NULL && data->m_pManager != NULL){
 		data->m_pManager->EventHandler(data);
 	}
 }
+/// libevent 用のタイマ用イベントハンドラ
 static void TimerHandler(int fd, short event, void *arg){
 	LibSanuki::EventManager::EventData *data = reinterpret_cast<LibSanuki::EventManager::EventData *>(arg);
 	if(data != NULL && data->m_pManager != NULL){
@@ -89,6 +92,7 @@ EventManager::EventData *EventManager::_CreateNewEventData(){
 	return data;
 }
 
+/// 登録されたイベントを解除します
 const bool EventManager::_DeleteEventData(struct EventData *data){
 	if(data == NULL){
 		return false;

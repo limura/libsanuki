@@ -95,21 +95,21 @@ public:
 	std::string Format(const char *fmt, ...);
 	/// 文字列をフォーマットします。
 	std::string Format(const wchar_t *fmt, ...);
-	/// フォーマットされた文字列を受け取ります
-	std::string Format(std::stringstream &ostream);
+	// フォーマットされた文字列を受け取ります
+	//std::string Format(std::ostream &ostream);
 
 	/// ログを出力します。
 	void PutLog(const LogType type, std::string log, char *funcName, char *file, int line);
 };
 
 /// LOG_DEBUG タイプでログを出力します。
-#define LOG_DEBUG(a) ::LibSanuki::SanukiLogger::PutLog(::LibSanuki::SanukiLogger::LOG_DEBUG, ::LibSanuki::SanukiLogger::GetInstance().Format a, __FUNCTION__, __FILE__, __LINE__)
+#define LOG_DEBUG(a) ::LibSanuki::SanukiLogger::GetInstance().PutLog(::LibSanuki::SanukiLogger::LOG_DEBUG, ::LibSanuki::SanukiLogger::GetInstance().Format a, __FUNCTION__, __FILE__, __LINE__)
 /// LOG_INFO  タイプでログを出力します。
-#define LOG_INFO(a)  ::LibSanuki::SanukiLogger::PutLog(::LibSanuki::SanukiLogger::LOG_INFO,  ::LibSanuki::SanukiLogger::GetInstance().Format a, __FUNCTION__, __FILE__, __LINE__)
+#define LOG_INFO(a)  ::LibSanuki::SanukiLogger::GetInstance().PutLog(::LibSanuki::SanukiLogger::LOG_INFO,  ::LibSanuki::SanukiLogger::GetInstance().Format a, __FUNCTION__, __FILE__, __LINE__)
 /// LOG_ERROR タイプでログを出力します。
-#define LOG_ERROR(a) ::LibSanuki::SanukiLogger::PutLog(::LibSanuki::SanukiLogger::LOG_ERROR, ::LibSanuki::SanukiLogger::GetInstance().Format a, __FUNCTION__, __FILE__, __LINE__)
+#define LOG_ERROR(a) ::LibSanuki::SanukiLogger::GetInstance().PutLog(::LibSanuki::SanukiLogger::LOG_ERROR, ::LibSanuki::SanukiLogger::GetInstance().Format a, __FUNCTION__, __FILE__, __LINE__)
 /// LOG_WARN  タイプでログを出力します。
-#define LOG_WARN(a)  ::LibSanuki::SanukiLogger::PutLog(::LibSanuki::SanukiLogger::LOG_WARN,  ::LibSanuki::SanukiLogger::GetInstance().Format a, __FUNCTION__, __FILE__, __LINE__)
+#define LOG_WARN(a)  ::LibSanuki::SanukiLogger::GetInstance().PutLog(::LibSanuki::SanukiLogger::LOG_WARN,  ::LibSanuki::SanukiLogger::GetInstance().Format a, __FUNCTION__, __FILE__, __LINE__)
 
 }; // namespase LibSanuki
 

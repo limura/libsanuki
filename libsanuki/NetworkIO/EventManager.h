@@ -53,6 +53,9 @@ public:
 		EventDescriptor m_Descriptor;
 	};
 private:
+	/// コピーコンストラクタは開放されません。(実装もされません)
+	EventManager(const EventManager &other);
+
 	typedef std::set<EventData *> EventSet;
 	EventSet m_EventSet;
 	uint32_t m_NowDescriptorNum;
