@@ -149,6 +149,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\NetworkIO\IPEndPoint.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\NetworkIO\IPEndPoint.h"
+				>
+			</File>
+			<File
 				RelativePath=".\NetworkIO\ReciverInterface.h"
 				>
 			</File>
@@ -165,7 +173,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\NetworkIO\SocketDescriptor.h"
+				>
+			</File>
+			<File
 				RelativePath=".\NetworkIO\StreamReciver.h"
+				>
+			</File>
+			<File
+				RelativePath=".\NetworkIO\TCPSendConnection.cpp"
 				>
 			</File>
 			<File

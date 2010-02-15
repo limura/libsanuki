@@ -1,4 +1,4 @@
-/// Libsanuki
+/// TCPSendConnection
 /*
 Copyright (c) 2010 IIMURA Takuji. All rights reserved.
 
@@ -24,31 +24,49 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 $Id$
 */
-#ifdef _WIN32
-#include <winsock2.h>
-#endif
 
-#include "Libsanuki.h"
-#include <locale.h>
-#include <evdns.h>
+#include "TCPSendConnection.h"
 
 namespace LibSanuki {
 
-/// システムの初期化を行います。
-void Initialize(){
-#ifdef _WIN32
-	WSADATA wsaData;
-	WSAStartup(MAKEWORD(2,0), &wsaData);
-#endif
-	setlocale(LC_ALL, "");
-	//evdns_init();
+/**
+ @brief コンストラクタ
+ */
+TCPSendConnection::TCPSendConnection(EventManager &eventManager)
+: m_EventManager(eventManager)
+, m_Socket(InvalidSocketDescriptor)
+{
 }
 
-/// システムの終了処理を行います。
-void Finalize(){
-#ifdef _WIN32
-	WSACleanup();
-#endif
+TCPSendConnection::~TCPSendConnection(){
+}
+
+const bool TCPSendConnection::Initialize(const std::string &uri){
+	if(m_Socket.IsConnected() == true){
+		// すでに接続されている
+		return true;
+	}
+
+	std::string::size_type pos = uri.find_first_of(':');
+	if(pos == std::string::npos){
+		return false;
+	}
+	std::string addr = uri.substr(pos);
+	IPEndPoint endPoint(address.c_str());
+
+	if(m_Socket.Initialize(AF_INET, SOCK_STREAM, 0) == false){
+		return false;
+	}
+
+	if(m_Socket.SetNonBlocking() == false){
+		return false;
+	}
+	if(endPoint.Connect(m_Socket, boost::mem_fn() == false){
+
+	}
+}
+
+const bool TCPSendConnection::SendBlock(SanukiSendBlock *data){
 }
 
 }; // namespase LibSanuki

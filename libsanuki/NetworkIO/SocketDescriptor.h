@@ -1,4 +1,5 @@
-/// Libsanuki
+/// SocketDescriptor
+/// WinsockとBSD Socketを同じように扱うためのwrapper
 /*
 Copyright (c) 2010 IIMURA Takuji. All rights reserved.
 
@@ -24,33 +25,65 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 $Id$
 */
+
+#ifndef LIBSANUKI_SocketDescriptor_H
+#define LIBSANUKI_SocketDescriptor_H
+
+#include "IPEndPoint.h"
+#include "EventManager.h"
+
 #ifdef _WIN32
 #include <winsock2.h>
+#include <ws2tcpip.h>
+#else
+#include <net/inet.h>
+#include <sys/types.h>
 #endif
-
-#include "Libsanuki.h"
-#include <locale.h>
-#include <evdns.h>
 
 namespace LibSanuki {
 
-/// システムの初期化を行います。
-void Initialize(){
+class SocketDescriptor {
+private:
 #ifdef _WIN32
-	WSADATA wsaData;
-	WSAStartup(MAKEWORD(2,0), &wsaData);
+	SOCKET m_Socket;
+#else
+	int m_Socket;
 #endif
-	setlocale(LC_ALL, "");
-	//evdns_init();
-}
+public:
+	SocketDescriptor();
+	~SocketDescriptor();
 
-/// システムの終了処理を行います。
-void Finalize(){
+	/// 初期化します
+	const bool Initialize(int addressFamily, int type, int protocol);
+
+	/// 有効な値を持っているかどうかを確認します
+	const bool IsValid() const;
+
+	/// Non Blocking Mode にします
+	const bool SetNonBlocking();
+
+	/// Blocking Mode にします
+	const bool SetBlocking();
+
+	/// 対象に接続を開始します
+	const bool ConnectTo(IPEndPoint &endPoint);
+
+	/// 読み込み用のイベントハンドラを登録します
+	const bool AddReadEventHandler(EventManager &manager, EventFunctor &functor);
+
+	/// 書き込み用のイベントハンドラを登録します
+	const bool AddWriteEventHandler(EventManager &manager, EventFunctor &functor);
+
+	/// すでに接続済みかどうかを取得します。
+	const bool IsConnected() const;
+
 #ifdef _WIN32
-	WSACleanup();
+	const SOCKET GetSocket();
+#else
+	const int GetSocket();
 #endif
-}
+};
 
 }; // namespase LibSanuki
 
-
+#endif // LIBSANUKI_?_H

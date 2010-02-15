@@ -1,4 +1,4 @@
-/// Libsanuki
+/// IPEndPoint.cpp
 /*
 Copyright (c) 2010 IIMURA Takuji. All rights reserved.
 
@@ -24,31 +24,44 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 $Id$
 */
-#ifdef _WIN32
-#include <winsock2.h>
-#endif
 
-#include "Libsanuki.h"
-#include <locale.h>
-#include <evdns.h>
+#include "IPEndPoint.h"
+#include "SocketDescriptor.h"
 
 namespace LibSanuki {
 
-/// システムの初期化を行います。
-void Initialize(){
-#ifdef _WIN32
-	WSADATA wsaData;
-	WSAStartup(MAKEWORD(2,0), &wsaData);
-#endif
-	setlocale(LC_ALL, "");
-	//evdns_init();
+/**
+ @brief コンストラクタ
+ */
+IPEndPoint::IPEndPoint(){
 }
 
-/// システムの終了処理を行います。
-void Finalize(){
-#ifdef _WIN32
-	WSACleanup();
-#endif
+IPEndPoint::IPEndPoint(char *address){
+	//とりあえずinet_atoi()のみ。
+	inet_atoi(address); //引数どうだっけ？これ
+}
+
+IPEndPoint::IPEndPoint(const IPEndPoint &other){
+	memcpy(&m_Storage, &other.m_Storage, sizeof(m_Storage));
+}
+
+IPEndPoint::~IPEndPoint(){
+}
+
+const bool IPEndPoint::Initialize(char *address){
+XXXX
+}
+
+/// DNSによる名前解決を行います。
+static const bool IPEndPoint::Lookup(EventManager &eventManager, ::boost::function<void(IPEndPoint, bool)> &LookupResultReciver){
+	// とりあえずは実装しません
+	// XXX not implemented yet.
+	return false;
+}
+
+/// 接続を開始します
+const bool IPEndPoint::Connect(SocketDescriptor &descriptor){
+	return connect(descriptor.GetSocket(), (struct sockaddr*)&m_Storage, sizeof(m_Storage)) == 0;
 }
 
 }; // namespase LibSanuki

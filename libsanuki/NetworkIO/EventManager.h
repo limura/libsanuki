@@ -31,13 +31,19 @@ $Id$
 #include <inttypes.h>
 
 #include <event.h>
+#include <evdns.h>
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
 #include <set>
 
+#ifdef _WIN32
+#include <winsock2.h>
+#endif
+
+#include "SocketDescriptor.h"
+
 namespace LibSanuki {
 
-typedef int SocketDescriptor;
 typedef boost::function<void()> EventFunctor;
 typedef void *EventDescriptor;
 

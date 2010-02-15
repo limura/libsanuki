@@ -50,6 +50,10 @@ static void TimerHandler(int fd, short event, void *arg){
 		data->m_pManager->EventHandler(data);
 	}
 }
+/// libevent 用のDNS lookup用のイベントハンドラ
+static void DnsHandler(int result, char type, int count, int ttl, void *addresses, void *arg){
+}
+
 };
 
 namespace LibSanuki {

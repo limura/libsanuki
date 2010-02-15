@@ -1,4 +1,4 @@
-/// Libsanuki
+/// IPEndPoint.h
 /*
 Copyright (c) 2010 IIMURA Takuji. All rights reserved.
 
@@ -24,33 +24,43 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 $Id$
 */
+
+#ifndef LIBSANUKI_IPEndPoint_H
+#define LIBSANUKI_IPEndPoint_H
+
+#include <boost/function/function.hpp>
+
 #ifdef _WIN32
 #include <winsock2.h>
+#include <ws2tcpip.h>
+#else
+#include <net/inet.h>
+#include <sys/types.h>
 #endif
-
-#include "Libsanuki.h"
-#include <locale.h>
-#include <evdns.h>
 
 namespace LibSanuki {
 
-/// システムの初期化を行います。
-void Initialize(){
-#ifdef _WIN32
-	WSADATA wsaData;
-	WSAStartup(MAKEWORD(2,0), &wsaData);
-#endif
-	setlocale(LC_ALL, "");
-	//evdns_init();
-}
+class SocketDescriptor;
 
-/// システムの終了処理を行います。
-void Finalize(){
-#ifdef _WIN32
-	WSACleanup();
-#endif
-}
+class IPEndPoint {
+private:
+	struct sockaddr_storage m_Storage;
+public:
+	IPEndPoint();
+	explicit IPEndPoint(char *address);
+	explicit IPEndPoint(const IPEndPoint &other);
+	~IPEndPoint();
+
+	/// 初期化します
+	const bool Initialize(char *address);
+
+	/// DNSによる名前解決を行います。
+	static const cool Lookup(EventManager &eventManager, ::boost::function<void(IPEndPoint, bool)> &LookupResultReciver);
+
+	/// 接続を開始します
+	const bool Connect(SocketDescriptor &descriptor, ::boost::function<void(bool)> &connectEventHandler);
+};
 
 }; // namespase LibSanuki
 
-
+#endif // LIBSANUKI_IPEndPoint_H

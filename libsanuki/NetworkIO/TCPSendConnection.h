@@ -39,6 +39,8 @@ class TCPSendConnection : public SendConnection {
 private:
 	EventManager &m_EventManager;
 	SocketDescriptor m_Socket;
+
+	void _ConnectEventHandler(bool handler);
 public:
 	explicit TCPSendConnection(EventManager &eventManager);
 	~TCPSendConnection();
