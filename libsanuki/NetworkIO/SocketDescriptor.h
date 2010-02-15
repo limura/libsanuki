@@ -29,9 +29,6 @@ $Id$
 #ifndef LIBSANUKI_SocketDescriptor_H
 #define LIBSANUKI_SocketDescriptor_H
 
-#include "IPEndPoint.h"
-#include "EventManager.h"
-
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -39,6 +36,9 @@ $Id$
 #include <net/inet.h>
 #include <sys/types.h>
 #endif
+
+#include "EventManager.h"
+#include "IPEndPoint.h"
 
 namespace LibSanuki {
 

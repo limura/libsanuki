@@ -31,6 +31,7 @@ $Id$
 
 #ifdef _WIN32
 
+#include <winsock2.h>
 #include <windows.h>
 
 typedef INT8   int8_t;

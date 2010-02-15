@@ -28,8 +28,6 @@ $Id$
 #ifndef LIBSANUKI_IPEndPoint_H
 #define LIBSANUKI_IPEndPoint_H
 
-#include <boost/function/function.hpp>
-
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -37,6 +35,9 @@ $Id$
 #include <net/inet.h>
 #include <sys/types.h>
 #endif
+
+#include <boost/function.hpp>
+#include "EventManager.h"
 
 namespace LibSanuki {
 
@@ -47,18 +48,18 @@ private:
 	struct sockaddr_storage m_Storage;
 public:
 	IPEndPoint();
-	explicit IPEndPoint(char *address);
+	explicit IPEndPoint(const char *address);
 	explicit IPEndPoint(const IPEndPoint &other);
 	~IPEndPoint();
 
 	/// 初期化します
-	const bool Initialize(char *address);
+	const bool Initialize(const char *address);
 
 	/// DNSによる名前解決を行います。
-	static const cool Lookup(EventManager &eventManager, ::boost::function<void(IPEndPoint, bool)> &LookupResultReciver);
+	static const bool Lookup(EventManager &eventManager, ::boost::function<void(IPEndPoint, bool)> LookupResultReciver);
 
 	/// 接続を開始します
-	const bool Connect(SocketDescriptor &descriptor, ::boost::function<void(bool)> &connectEventHandler);
+	const bool Connect(SocketDescriptor &descriptor, ::boost::function<void(bool)> connectEventHandler);
 };
 
 }; // namespase LibSanuki

@@ -28,6 +28,14 @@ $Id$
 #ifndef LIBSANUKI_EventManager_H
 #define LIBSANUKI_EventManager_H
 
+#ifdef _WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#else
+#include <sys/socket.h>
+#include <netinet/in.h>
+#endif
+
 #include <inttypes.h>
 
 #include <event.h>
@@ -36,16 +44,12 @@ $Id$
 #include <boost/shared_ptr.hpp>
 #include <set>
 
-#ifdef _WIN32
-#include <winsock2.h>
-#endif
-
-#include "SocketDescriptor.h"
-
 namespace LibSanuki {
 
 typedef boost::function<void()> EventFunctor;
 typedef void *EventDescriptor;
+
+class SocketDescriptor;
 
 class EventManager {
 private:
@@ -83,9 +87,9 @@ public:
 	const bool DispatchAll();
 
 	/// 読み込み用にイベントハンドラを指定します
-	const EventDescriptor SetReadEventHandler(const SocketDescriptor descriptor, EventFunctor &functor);
+	const EventDescriptor SetReadEventHandler(SocketDescriptor descriptor, EventFunctor &functor);
 	/// 書き込み用にイベントハンドラを指定します
-	const EventDescriptor SetWriteEventFunctor(const SocketDescriptor descriptor, EventFunctor &functor);
+	const EventDescriptor SetWriteEventFunctor(SocketDescriptor descriptor, EventFunctor &functor);
 	/// 時間がたったときに呼び出されるイベントハンドラを指定します
 	const EventDescriptor SetTimerEventFunctor(const uint32_t timeoutMillisecond, EventFunctor &functor);
 

@@ -32,6 +32,8 @@ $Id$
 
 #include "EventManager.h"
 #include "SendConnection.h"
+#include "SocketDescriptor.h"
+#include "SanukiDataBlock.h"
 
 namespace LibSanuki {
 
@@ -46,7 +48,7 @@ public:
 	~TCPSendConnection();
 
 	const bool Initialize(const std::string &uri);
-	const bool SendBlock(SanukiSendBlock *data);
+	const bool SendBlock(SanukiDataBlock *data);
 };
 
 }; // namespase LibSanuki

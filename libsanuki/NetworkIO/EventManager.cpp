@@ -26,6 +26,7 @@ $Id$
 */
 
 #include "EventManager.h"
+#include "SocketDescriptor.h"
 
 extern "C" {
 
@@ -152,27 +153,27 @@ const bool EventManager::DispatchAll(){
 }
 
 /// 読み込み用にイベントハンドラを指定します
-const EventDescriptor EventManager::SetReadEventHandler(const SocketDescriptor descriptor, EventFunctor &functor){
+const EventDescriptor EventManager::SetReadEventHandler(SocketDescriptor descriptor, EventFunctor &functor){
 	EventData *data = _CreateNewEventData();
 	if(data == NULL){
 		return NULL;
 	}
 	data->m_Functor = functor;
 	event_base_set(m_pEventBase, &data->m_Event);
-	event_set(&data->m_Event, descriptor, EV_READ, ReadHandler, data);
+	event_set(&data->m_Event, descriptor.GetSocket(), EV_READ, ReadHandler, data);
 	event_add(&data->m_Event, NULL);
 	return data;
 }
 
 /// 書き込み用にイベントハンドラを指定します
-const EventDescriptor EventManager::SetWriteEventFunctor(const SocketDescriptor descriptor, EventFunctor &functor){
+const EventDescriptor EventManager::SetWriteEventFunctor(SocketDescriptor descriptor, EventFunctor &functor){
 	EventData *data = _CreateNewEventData();
 	if(data == NULL){
 		return NULL;
 	}
 	data->m_Functor = functor;
 	event_base_set(m_pEventBase, &data->m_Event);
-	event_set(&data->m_Event, descriptor, EV_WRITE, WriteHandler, data);
+	event_set(&data->m_Event, descriptor.GetSocket(), EV_WRITE, WriteHandler, data);
 	event_add(&data->m_Event, NULL);
 	return data;
 }

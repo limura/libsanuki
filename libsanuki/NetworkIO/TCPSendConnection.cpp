@@ -27,6 +27,9 @@ $Id$
 
 #include "TCPSendConnection.h"
 
+#include <functional>
+#include <boost/bind.hpp>
+
 namespace LibSanuki {
 
 /**
@@ -34,7 +37,7 @@ namespace LibSanuki {
  */
 TCPSendConnection::TCPSendConnection(EventManager &eventManager)
 : m_EventManager(eventManager)
-, m_Socket(InvalidSocketDescriptor)
+, m_Socket()
 {
 }
 
@@ -52,7 +55,7 @@ const bool TCPSendConnection::Initialize(const std::string &uri){
 		return false;
 	}
 	std::string addr = uri.substr(pos);
-	IPEndPoint endPoint(address.c_str());
+	IPEndPoint endPoint(addr.c_str());
 
 	if(m_Socket.Initialize(AF_INET, SOCK_STREAM, 0) == false){
 		return false;
@@ -61,12 +64,14 @@ const bool TCPSendConnection::Initialize(const std::string &uri){
 	if(m_Socket.SetNonBlocking() == false){
 		return false;
 	}
-	if(endPoint.Connect(m_Socket, boost::mem_fn() == false){
-
+	if(endPoint.Connect(m_Socket, boost::bind(&TCPSendConnection::_ConnectEventHandler, this, _1)) == false){
+		return false;
 	}
+	return true;
 }
 
-const bool TCPSendConnection::SendBlock(SanukiSendBlock *data){
+const bool TCPSendConnection::SendBlock(SanukiDataBlock *data){
+	return false;
 }
 
 }; // namespase LibSanuki

@@ -28,6 +28,12 @@ $Id$
 #include "IPEndPoint.h"
 #include "SocketDescriptor.h"
 
+#ifdef _WIN32
+#else
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#endif
+
 namespace LibSanuki {
 
 /**
@@ -36,9 +42,8 @@ namespace LibSanuki {
 IPEndPoint::IPEndPoint(){
 }
 
-IPEndPoint::IPEndPoint(char *address){
-	//とりあえずinet_atoi()のみ。
-	inet_atoi(address); //引数どうだっけ？これ
+IPEndPoint::IPEndPoint(const char *address){
+	Initialize(address);
 }
 
 IPEndPoint::IPEndPoint(const IPEndPoint &other){
@@ -48,19 +53,50 @@ IPEndPoint::IPEndPoint(const IPEndPoint &other){
 IPEndPoint::~IPEndPoint(){
 }
 
-const bool IPEndPoint::Initialize(char *address){
-XXXX
+const bool IPEndPoint::Initialize(const char *address){
+	if(address == NULL){
+		return false;
+	}
+	std::string url(address);
+	std::string host = url.substr(0, url.find_first_of(':'));
+	std::string portStr = url.substr(url.find_first_of(':'));
+	if(host.size() <= 0 || portStr.size() <= 0){
+		return false;
+	}
+	int port = atoi(portStr.c_str());
+	memset(&m_Storage, 0, sizeof(m_Storage));
+#ifdef _WIN32
+	//WSAStringToAddress(host.c_str(), AF_INET6, 
+#else
+	unsigned char buf[sizeof(struct in6_addr)];
+	if(inet_pton(AF_INET6, address, buf) == 1){
+		struct sockaddr_in6 *p = (struct sockaddr_in6 *)&m_Storage;
+		memcpy(&p->sin6_addr, buf, sizeof(p->sin6_addr));
+		p->sin6_family = AF_INET6;
+		p->sin6_port = htons(port);
+		//p->sin6_flowinfo;
+		//p->sin6_scope_id;
+	}else if(inet_pton(AF_INET, address, buf) == 1){
+		struct sockaddr_in *p = (struct sockaddr_in *)&m_Storage;
+		memcpy(&p->sin_addr, buf, sizeof(p->sin_addr));
+		p->sin_family = AF_INET;
+		p->sin_port = htons(port);
+	}else{
+		return false;
+	}
+	return true;
+#endif
 }
 
 /// DNSによる名前解決を行います。
-static const bool IPEndPoint::Lookup(EventManager &eventManager, ::boost::function<void(IPEndPoint, bool)> &LookupResultReciver){
+const bool IPEndPoint::Lookup(EventManager &eventManager, ::boost::function<void(IPEndPoint, bool)> LookupResultReciver){
 	// とりあえずは実装しません
 	// XXX not implemented yet.
 	return false;
 }
 
 /// 接続を開始します
-const bool IPEndPoint::Connect(SocketDescriptor &descriptor){
+const bool IPEndPoint::Connect(SocketDescriptor &descriptor, ::boost::function<void(bool)> Bfunctor){
 	return connect(descriptor.GetSocket(), (struct sockaddr*)&m_Storage, sizeof(m_Storage)) == 0;
 }
 
