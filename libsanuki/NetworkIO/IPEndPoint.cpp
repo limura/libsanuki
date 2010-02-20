@@ -96,8 +96,12 @@ const bool IPEndPoint::Lookup(EventManager &eventManager, ::boost::function<void
 }
 
 /// Ú‘±‚ðŠJŽn‚µ‚Ü‚·
-const bool IPEndPoint::Connect(SocketDescriptor &descriptor, ::boost::function<void(bool)> Bfunctor){
-	return connect(descriptor.GetSocket(), (struct sockaddr*)&m_Storage, sizeof(m_Storage)) == 0;
+const bool IPEndPoint::Connect(SocketDescriptor &descriptor){
+	if(connect(descriptor.GetSocket(), (struct sockaddr*)&m_Storage, sizeof(m_Storage)) != 0){
+		// XXX != 0 ‚Å‚¢‚¢‚Ì‚©‚Í•s–¾
+		return false;
+	}
+
 }
 
 }; // namespase LibSanuki

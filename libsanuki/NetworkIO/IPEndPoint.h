@@ -46,10 +46,15 @@ class SocketDescriptor;
 class IPEndPoint {
 private:
 	struct sockaddr_storage m_Storage;
+	void _StartLookup();
+	void _LookupFunctor(IPEndPoint endPoint, bool result);
+
 public:
 	IPEndPoint();
+	explicit IPEndPoint(const uint32_t ipv4Addr);
+	explicit IPEndPoint(struct in6_addr ipv6Addr);
 	explicit IPEndPoint(const char *address);
-	explicit IPEndPoint(const IPEndPoint &other);
+	IPEndPoint(const IPEndPoint &other);
 	~IPEndPoint();
 
 	/// ‰Šú‰»‚µ‚Ü‚·
@@ -59,7 +64,7 @@ public:
 	static const bool Lookup(EventManager &eventManager, ::boost::function<void(IPEndPoint, bool)> LookupResultReciver);
 
 	/// Ú‘±‚ğŠJn‚µ‚Ü‚·
-	const bool Connect(SocketDescriptor &descriptor, ::boost::function<void(bool)> connectEventHandler);
+	const bool Connect(SocketDescriptor &descriptor);
 };
 
 }; // namespase LibSanuki

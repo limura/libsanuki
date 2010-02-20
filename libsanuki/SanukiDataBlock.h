@@ -33,14 +33,18 @@ $Id$
 #include <list>
 #include <inttypes.h>
 
+#include <boost/shared_ptr.hpp>
+
 namespace LibSanuki {
 
-	// ひとつのメッセージを表すデータブロックです。
+	/// ひとつのメッセージを表すデータブロックです。
 	typedef std::string SanukiDataBlock;
-	// データブロックの配列です。
-	typedef std::vector<SanukiDataBlock *> SanukiDataBlockVector;
-	// データブロックのリストです。
-	typedef std::list<SanukiDataBlock *> SanukiDataBlockList;
+	/// データブロックのshared_ptrです
+	typedef boost::shared_ptr<SanukiDataBlock> SanukiDataBlockSharedPtr;
+	/// データブロックの配列です。
+	typedef std::vector<SanukiDataBlockSharedPtr> SanukiDataBlockVector;
+	/// データブロックのリストです。
+	typedef std::list<SanukiDataBlockSharedPtr> SanukiDataBlockList;
 
 }; // namespase LibSanuki
 

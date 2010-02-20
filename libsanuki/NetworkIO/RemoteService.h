@@ -51,7 +51,10 @@ private:
 	SendConnection *m_pConnection;
 
 	/// 送信を開始します。
-	void _InvokeSend();
+	const bool _InvokeSend(SanukiDataBlockSharedPtr &message);
+
+	/// 接続に失敗したときのイベントハンドラです
+	void _ConnectError(SendConnection *);
 
 public:
 	/// コピーコンストラクタ
@@ -63,9 +66,9 @@ public:
 	/// デストラクタ
 	~RemoteService();
 
-	/// メッセージを送信します。渡されたメッセージはServicePointの管理となり、送信が終了すると開放されます。
-	const bool Send(SanukiDataBlock *message);
-	/// メッセージを送信します。渡されたメッセージは開放されず、ServicePoint内部にはコピーが確保されます。
+	/// メッセージを送信します。渡されたメッセージはServicePoint側でもリファレンスし、送信が終わると開放します。
+	const bool Send(SanukiDataBlockSharedPtr &message);
+	/// メッセージを送信します。渡されたメッセージはServicePoint内部にはコピーが確保されます。
 	const bool SendCopy(const SanukiDataBlock &message);
 
 	/// 比較演算子(==)

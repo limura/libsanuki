@@ -30,29 +30,19 @@ $Id$
 
 extern "C" {
 
-/// libevent 用の読み込み用イベントハンドラ
-static void ReadHandler(int fd, short event, void *arg){
+/// libevent 用のイベントハンドラ
+static void libeventEventHandler(int fd, short ev, void *arg){
 	LibSanuki::EventManager::EventData *data = reinterpret_cast<LibSanuki::EventManager::EventData *>(arg);
 	if(data != NULL && data->m_pManager != NULL){
-		data->m_pManager->EventHandler(data);
-	}
-}
-/// libevent 用の書き出し用イベントハンドラ
-static void WriteHandler(int fd, short event, void *arg){
-	LibSanuki::EventManager::EventData *data = reinterpret_cast<LibSanuki::EventManager::EventData *>(arg);
-	if(data != NULL && data->m_pManager != NULL){
-		data->m_pManager->EventHandler(data);
-	}
-}
-/// libevent 用のタイマ用イベントハンドラ
-static void TimerHandler(int fd, short event, void *arg){
-	LibSanuki::EventManager::EventData *data = reinterpret_cast<LibSanuki::EventManager::EventData *>(arg);
-	if(data != NULL && data->m_pManager != NULL){
-		data->m_pManager->EventHandler(data);
+		data->m_pManager->EventHandler(data, ev);
 	}
 }
 /// libevent 用のDNS lookup用のイベントハンドラ
-static void DnsHandler(int result, char type, int count, int ttl, void *addresses, void *arg){
+static void DNSHandler(int result, char type, int count, int ttl, void *addresses, void *arg){
+	LibSanuki::EventManager::DNSLookupData *data = reinterpret_cast<LibSanuki::EventManager::DNSLookupData *>(arg);
+	if(data != NULL && data->m_pManager != NULL){
+		data->m_pManager->DNSLookupEventHandler(data, result, type, count, ttl, addresses);
+	}
 }
 
 };
@@ -93,7 +83,9 @@ EventManager::EventData *EventManager::_CreateNewEventData(){
 		return NULL;
 	}
 	data->m_pManager = this;
-	data->m_Functor = 0;
+	data->m_ReadFunctor = 0;
+	data->m_WriteFunctor = 0;
+	data->m_TimeoutFunctor = 0;
 	return data;
 }
 
@@ -112,6 +104,33 @@ const bool EventManager::_DeleteEventData(struct EventData *data){
 	delete data;
 	return false;
 }
+
+
+EventManager::DNSLookupData *EventManager::_CreateNewDNSLookupData(){
+	struct DNSLookupData *data = new DNSLookupData();
+	if(data == NULL){
+		return NULL;
+	}
+	std::pair<DNSLookupSet::iterator, bool> result = m_LookupSet.insert(data);
+	if(result.second == false){
+		delete data;
+		return NULL;
+	}
+	data->m_bNeedFallbackIPv4 = false;
+	data->m_Functor = 0;
+	data->m_pManager = this;
+	data->m_ResolvingName = "";
+	return data;
+}
+const bool EventManager::_DeleteDNSLookupData(EventManager::DNSLookupData *data){
+	if(data != NULL){
+		m_LookupSet.erase(data);
+		delete data;
+		return true;
+	}
+	return false;
+}
+
 
 /// 初期化します。falseを返した場合は初期化に失敗しています。
 const bool EventManager::Initialize(){
@@ -153,28 +172,79 @@ const bool EventManager::DispatchAll(){
 }
 
 /// 読み込み用にイベントハンドラを指定します
-const EventDescriptor EventManager::SetReadEventHandler(SocketDescriptor descriptor, EventFunctor &functor){
+const EventDescriptor EventManager::SetReadEventHandler(
+SocketDescriptor descriptor
+, EventFunctor &readFunctor
+, EventFunctor &timeoutFunctor
+, uint32_t timeoutMillisecond){
 	EventData *data = _CreateNewEventData();
 	if(data == NULL){
 		return NULL;
 	}
-	data->m_Functor = functor;
+	data->m_ReadFunctor = readFunctor;
+	data->m_TimeoutFunctor = timeoutFunctor;
 	event_base_set(m_pEventBase, &data->m_Event);
-	event_set(&data->m_Event, descriptor.GetSocket(), EV_READ, ReadHandler, data);
-	event_add(&data->m_Event, NULL);
+	event_set(&data->m_Event, descriptor.GetSocket(), EV_READ, libeventEventHandler, data);
+	if(timeoutMillisecond > 0){
+		struct timeval tv;
+		tv.tv_sec = timeoutMillisecond / 1000;
+		tv.tv_usec = (timeoutMillisecond % 1000) * 1000;;
+		event_add(&data->m_Event, &tv);
+	}else{
+		event_add(&data->m_Event, NULL);
+	}
 	return data;
 }
 
 /// 書き込み用にイベントハンドラを指定します
-const EventDescriptor EventManager::SetWriteEventFunctor(SocketDescriptor descriptor, EventFunctor &functor){
+const EventDescriptor EventManager::SetWriteEventFunctor(
+SocketDescriptor descriptor
+, EventFunctor &writeFunctor
+, EventFunctor &timeoutFunctor
+, uint32_t timeoutMillisecond){
 	EventData *data = _CreateNewEventData();
 	if(data == NULL){
 		return NULL;
 	}
-	data->m_Functor = functor;
+	data->m_WriteFunctor = writeFunctor;
+	data->m_TimeoutFunctor = timeoutFunctor;
 	event_base_set(m_pEventBase, &data->m_Event);
-	event_set(&data->m_Event, descriptor.GetSocket(), EV_WRITE, WriteHandler, data);
-	event_add(&data->m_Event, NULL);
+	event_set(&data->m_Event, descriptor.GetSocket(), EV_WRITE, libeventEventHandler, data);
+	if(timeoutMillisecond > 0){
+		struct timeval tv;
+		tv.tv_sec = timeoutMillisecond / 1000;
+		tv.tv_usec = (timeoutMillisecond % 1000) * 1000;;
+		event_add(&data->m_Event, &tv);
+	}else{
+		event_add(&data->m_Event, NULL);
+	}
+	return data;
+}
+
+/// 読み込み、書き込み両用にイベントハンドラを指定します
+const EventDescriptor EventManager::SetReadWriteEventFunctor(
+SocketDescriptor descriptor
+, EventFunctor &readFunctor
+, EventFunctor &writeFunctor
+, EventFunctor &timeoutFunctor
+, uint32_t timeoutMillisecond){
+	EventData *data = _CreateNewEventData();
+	if(data == NULL){
+		return NULL;
+	}
+	data->m_ReadFunctor = readFunctor;
+	data->m_WriteFunctor = writeFunctor;
+	data->m_TimeoutFunctor = timeoutFunctor;
+	event_base_set(m_pEventBase, &data->m_Event);
+	event_set(&data->m_Event, descriptor.GetSocket(), EV_WRITE, libeventEventHandler, data);
+	if(timeoutMillisecond > 0){
+		struct timeval tv;
+		tv.tv_sec = timeoutMillisecond / 1000;
+		tv.tv_usec = (timeoutMillisecond % 1000) * 1000;;
+		event_add(&data->m_Event, &tv);
+	}else{
+		event_add(&data->m_Event, NULL);
+	}
 	return data;
 }
 
@@ -184,9 +254,9 @@ const EventDescriptor EventManager::SetTimerEventFunctor(const uint32_t timeoutM
 	if(data == NULL){
 		return NULL;
 	}
-	data->m_Functor = functor;
+	data->m_TimeoutFunctor = functor;
 	event_base_set(m_pEventBase, &data->m_Event);
-	evtimer_set(&data->m_Event, TimerHandler, data);
+	evtimer_set(&data->m_Event, libeventEventHandler, data);
 	struct timeval tv;
 	tv.tv_sec = timeoutMillisecond / 1000;
 	tv.tv_usec = (timeoutMillisecond % 1000) * 1000;
@@ -200,14 +270,120 @@ const bool EventManager::CanselEvent(EventDescriptor descriptor){
 }
 
 /// 何らかのイベントが発生したときに呼び出されるイベントハンドラです
-void EventManager::EventHandler(EventData *data){
-	if(data != NULL){
-		if(data->m_Functor != 0){
-			data->m_Functor();
-		}
-		_DeleteEventData(data);
+void EventManager::EventHandler(EventData *data, short ev){
+	if(data == NULL || m_EventSet.find(data) == m_EventSet.end()){
+		// NULLか登録がなくなっていれば何もしなくてよい
+		return;
 	}
+	// それぞれイベントハンドラを呼び出して、
+	if(ev & EV_READ && data->m_ReadFunctor != 0){
+		data->m_ReadFunctor();
+	}
+	if(ev & EV_WRITE && data->m_WriteFunctor != 0){
+		data->m_WriteFunctor();
+	}
+	if(ev & EV_TIMEOUT && data->m_TimeoutFunctor != 0){
+		data->m_TimeoutFunctor();
+	}
+	// 登録を削除
+	_DeleteEventData(data);
 }
+
+/// IPv4アドレスのみで名前解決を行います
+const EventDescriptor EventManager::StartIPv4Lookup(
+const char *name, DNSLookupFunctor &functor){
+	DNSLookupData *data = _CreateNewDNSLookupData();
+	if(data == NULL){
+		return NULL;
+	}
+	data->m_bNeedFallbackIPv4 = false;
+	data->m_Functor = functor;
+
+	evdns_resolve_ipv4(name, 0, DNSHandler, data);
+
+	return data;
+}
+/// IPv6アドレスのみで名前解決を行います
+const EventDescriptor EventManager::StartIPv6Lookup(const char *name, DNSLookupFunctor &functor){
+	DNSLookupData *data = _CreateNewDNSLookupData();
+	if(data == NULL){
+		return NULL;
+	}
+	data->m_bNeedFallbackIPv4 = false;
+	data->m_Functor = functor;
+
+	evdns_resolve_ipv6(name, 0, DNSHandler, data);
+
+	return data;
+}
+
+/// 名前解決を行います
+const EventDescriptor EventManager::StartDNSLookup(const char *name, DNSLookupFunctor &functor){
+	DNSLookupData *data = _CreateNewDNSLookupData();
+	if(data == NULL){
+		return NULL;
+	}
+	data->m_bNeedFallbackIPv4 = true;
+	data->m_Functor = functor;
+
+	evdns_resolve_ipv6(name, 0, DNSHandler, data);
+
+	return data;
+}
+
+/// DNS lookup でのイベントが発生したときに呼び出されるイベントハンドラです
+void EventManager::DNSLookupEventHandler(
+DNSLookupData *data, int result, char type, int count, int ttl, void *addresses){
+	if(m_LookupSet.find(data) == m_LookupSet.end()){
+		// 既にテーブルになければ呼び出す必要はない
+		return;
+	}
+	if(data->m_Functor == 0){
+		// functor がなければ、何もする必要はない
+		_DeleteDNSLookupData(data);
+		return;
+	}
+	if(result != DNS_ERR_NONE){
+		data->m_Functor(::std::vector<IPEndPoint>(), false);
+		_DeleteDNSLookupData(data);
+		return;
+	}
+	switch(type){
+		case DNS_IPv4_A:
+			{
+				::std::vector<IPEndPoint> ipVector;
+				uint32_t *pui32 = reinterpret_cast<uint32_t *>(addresses);
+				for(int i = 0; i < count; i++){
+					ipVector.push_back(IPEndPoint(pui32[i]));
+				}
+				data->m_Functor(ipVector, true);
+			}
+			break;
+		case DNS_PTR:
+			data->m_Functor(::std::vector<IPEndPoint>(), false);
+			break;
+		case DNS_IPv6_AAAA:
+			{
+				if(count <= 0 && data->m_bNeedFallbackIPv4 == true){
+					evdns_resolve_ipv4(data->m_ResolvingName.c_str(), 0, DNSHandler, data);
+					return;
+				}
+
+				::std::vector<IPEndPoint> ipVector;
+				struct in6_addr *paddr = reinterpret_cast<struct in6_addr *>(addresses);
+				for(int i = 0; i < count; i++){
+					ipVector.push_back(IPEndPoint(paddr[i]));
+				}
+				data->m_Functor(ipVector, true);
+			}
+			break;
+		default:
+			data->m_Functor(::std::vector<IPEndPoint>(), false);
+			break;
+	}
+	_DeleteDNSLookupData(data);
+}
+
 
 }; // namespase LibSanuki
 

@@ -31,6 +31,8 @@ $Id$
 #ifndef LIBSANUKI_SendConnection_H
 #define LIBSANUKI_SendConnection_H
 
+#include <boost/function.hpp>
+
 #include "EventManager.h"
 #include "SanukiDataBlock.h"
 #include <string>
@@ -38,14 +40,27 @@ $Id$
 namespace LibSanuki {
 
 class SendConnection {
+private:
+	SanukiDataBlockList m_SendQueue;
+	/// _GetNextBucket() で既に書き込まれたデータサイズ
+	size_t m_SendedSize;
+
+protected:
+	/// 送信されるべきデータが残っているかどうかを取得します
+	const bool _IsSendQueueAlive() const;
+	/// 次に送信するデータを指定された大きさの「バケット」に詰めます
+	const bool _GetNextBucket(char *buffer, size_t &inOut_bufferSize);
+
 public:
 	virtual ~SendConnection();
 
-	/// 初期化します
-	virtual const bool Initialize(const std::string &uri) = 0;
+	typedef ::boost::function<void(SendConnection *)> ConnectionErrorFunctor;
 
-	/// データを送信します。送信が失敗した場合には false を返します。dataは送信されたデータ分だけ縮みます。送信の終了はデータのサイズで判断してください。
-	virtual const bool SendBlock(SanukiDataBlock *data) = 0;
+	/// 初期化します
+	virtual const bool Initialize(const std::string &uri, ConnectionErrorFunctor functor) = 0;
+
+	/// データを送信queue に追加します。送信queueに追加されたデータは、SendConnectionでもリファレンスします
+	const bool SendBlock(SanukiDataBlockSharedPtr &data);
 };
 
 }; // namespase LibSanuki

@@ -41,13 +41,15 @@ class TCPSendConnection : public SendConnection {
 private:
 	EventManager &m_EventManager;
 	SocketDescriptor m_Socket;
-
-	void _ConnectEventHandler(bool handler);
+	SendConnection::ConnectionErrorFunctor m_ErrorFunctor;
+	void _ConnectEventHandler();
+	void _ConnectTimeoutEventHandler();
+	void _WriteEventHandler();
 public:
 	explicit TCPSendConnection(EventManager &eventManager);
 	~TCPSendConnection();
 
-	const bool Initialize(const std::string &uri);
+	const bool Initialize(const std::string &uri, SendConnection::ConnectionErrorFunctor functor);
 	const bool SendBlock(SanukiDataBlock *data);
 };
 

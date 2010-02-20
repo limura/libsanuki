@@ -43,10 +43,14 @@ $Id$
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
 #include <set>
+#include <vector>
 
 namespace LibSanuki {
 
+class IPEndPoint;
+
 typedef boost::function<void()> EventFunctor;
+typedef ::boost::function<void(std::vector<IPEndPoint>, bool)> DNSLookupFunctor;
 typedef void *EventDescriptor;
 
 class SocketDescriptor;
@@ -59,8 +63,17 @@ public:
 	struct EventData {
 		EventManager *m_pManager;
 		struct event m_Event;
-		EventFunctor m_Functor;
+		EventFunctor m_ReadFunctor;
+		EventFunctor m_WriteFunctor;
+		EventFunctor m_TimeoutFunctor;
 		EventDescriptor m_Descriptor;
+	};
+	/// 内部で使用するための構造体です。外部からはアクセスしないでください
+	struct DNSLookupData{
+		EventManager *m_pManager;
+		DNSLookupFunctor m_Functor;
+		bool m_bNeedFallbackIPv4; //!< IPv6 で名前解決に失敗したら、IPv4で引きなおすべきかを指定します
+		std::string m_ResolvingName; //!< 検索中の名前
 	};
 private:
 	/// コピーコンストラクタは開放されません。(実装もされません)
@@ -69,15 +82,22 @@ private:
 	typedef std::set<EventData *> EventSet;
 	EventSet m_EventSet;
 	uint32_t m_NowDescriptorNum;
+	typedef std::set<DNSLookupData *> DNSLookupSet;
+	DNSLookupSet m_LookupSet;
 
 	EventData *_CreateNewEventData();
 	const bool _DeleteEventData(struct EventData *data);
+
+	DNSLookupData *_CreateNewDNSLookupData();
+	const bool _DeleteDNSLookupData(DNSLookupData *data);
 
 public:
 	EventManager();
 	~EventManager();
 
 	const bool Initialize();
+
+	static EventFunctor GetNullFunctor();
 
 	/// そのときに送受信できるものについての I/O を行います。
 	const bool Dispatch();
@@ -87,17 +107,29 @@ public:
 	const bool DispatchAll();
 
 	/// 読み込み用にイベントハンドラを指定します
-	const EventDescriptor SetReadEventHandler(SocketDescriptor descriptor, EventFunctor &functor);
+	const EventDescriptor SetReadEventHandler(SocketDescriptor descriptor, EventFunctor &readFunctor, EventFunctor &timeoutFunctor, uint32_t timeoutMillisecond = 0);
 	/// 書き込み用にイベントハンドラを指定します
-	const EventDescriptor SetWriteEventFunctor(SocketDescriptor descriptor, EventFunctor &functor);
+	const EventDescriptor SetWriteEventFunctor(SocketDescriptor descriptor, EventFunctor &writeFunctor, EventFunctor &timeoutFunctor, uint32_t timeoutMillisecond = 0);
+	/// 読み込み、書き込み両用にイベントハンドラを指定します
+	const EventDescriptor SetReadWriteEventFunctor(SocketDescriptor descriptor, EventFunctor &readFunctor, EventFunctor &writeFunctor, EventFunctor &timeoutFunctor, uint32_t timeoutMillisecond = 0);
 	/// 時間がたったときに呼び出されるイベントハンドラを指定します
 	const EventDescriptor SetTimerEventFunctor(const uint32_t timeoutMillisecond, EventFunctor &functor);
+
+	/// IPv4アドレスのみで名前解決を行います
+	const EventDescriptor StartIPv4Lookup(const char *name, DNSLookupFunctor &functor);
+	/// IPv6アドレスのみで名前解決を行います
+	const EventDescriptor StartIPv6Lookup(const char *name, DNSLookupFunctor &functor);
+	/// 名前解決を行います
+	const EventDescriptor StartDNSLookup(const char *name, DNSLookupFunctor &functor);
 
 	/// Set*EventFunctor　で設定したイベントハンドラを取り除きます。
 	const bool CanselEvent(EventDescriptor descriptor);
 
 	/// なんらかのイベントが発生したときに呼び出されるイベントハンドラです
-	void EventHandler(EventData *data);
+	void EventHandler(EventData *data, short ev);
+
+	/// DNS lookup でのイベントが発生したときに呼び出されるイベントハンドラです
+	void DNSLookupEventHandler(DNSLookupData *data, int result, char type, int count, int ttl, void *addresses);
 };
 
 }; // namespase LibSanuki

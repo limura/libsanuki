@@ -38,13 +38,36 @@ namespace LibSanuki {
 TCPSendConnection::TCPSendConnection(EventManager &eventManager)
 : m_EventManager(eventManager)
 , m_Socket()
+, m_ErrorFunctor(0)
 {
 }
 
 TCPSendConnection::~TCPSendConnection(){
 }
 
-const bool TCPSendConnection::Initialize(const std::string &uri){
+void TCPSendConnection::_ConnectEventHandler(){
+	// Ç±Ç±Ç…óàÇΩÇÁÅAÇ∆ÇËÇ†Ç¶Ç∏ê⁄ë±ÇÕÇ≈Ç´ÇΩÇ±Ç∆Ç∆Ç∑ÇÈ
+	if(_IsSendQueueAlive() == false){
+		return;
+	}
+	m_EventManager.SetWriteEventFunctor(
+		m_Socket
+		, ::boost::bind(&TCPSendConnection::_WriteEventHandler, this)
+		, 0);
+}
+void TCPSendConnection::_ConnectTimeoutEventHandler(){
+	if(m_ErrorFunctor != 0){
+		m_ErrorFunctor(this);
+	}
+}
+void TCPSendConnection::_WriteEventHandler(){
+
+}
+
+
+const bool TCPSendConnection::Initialize(
+const std::string &uri, SendConnection::ConnectionErrorFunctor functor){
+	m_ErrorFunctor = functor;
 	if(m_Socket.IsConnected() == true){
 		// Ç∑Ç≈Ç…ê⁄ë±Ç≥ÇÍÇƒÇ¢ÇÈ
 		return true;
@@ -64,9 +87,14 @@ const bool TCPSendConnection::Initialize(const std::string &uri){
 	if(m_Socket.SetNonBlocking() == false){
 		return false;
 	}
-	if(endPoint.Connect(m_Socket, boost::bind(&TCPSendConnection::_ConnectEventHandler, this, _1)) == false){
+	if(endPoint.Connect(m_Socket) == false){
 		return false;
 	}
+	m_EventManager.SetWriteEventFunctor(
+		m_Socket
+		, boost::bind(&TCPSendConnection::_ConnectEventHandler, this)
+		, boost::bind(&TCPSendConnection::_ConnectTimeoutEventHandler, this)
+		, 5 * 1000);
 	return true;
 }
 
